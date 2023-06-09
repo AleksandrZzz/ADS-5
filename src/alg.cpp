@@ -23,28 +23,29 @@ std::string infx2pstfx(std::string inf) {
 
   for (int i = 0; i < inf.size(); i++) {
     if (isdigit(inf[i])) {
-      ss << " " << grabNum(&i, inf);
+		  ss << " " << grabNum(&i, inf);
       continue;
     }
+
     if ('(' == inf[i]) {
       stack.push(inf[i]);
       continue;
     }
+
     if (')' == inf[i]) {
-      while (stack.get() != '(') ss << " " << stack.pop();
+		 while (stack.get() != '(') ss << " " << stack.pop();
       stack.pop();
       continue;
     }
     if (getPrecedence(inf[i]) == std::string::npos) continue;
+
     while (!stack.isEmpty() && (stack.get() != '(') &&
            (getPrecedence(stack.get()) >= getPrecedence(inf[i])))
-      ss << stack.pop() << " ";
-      ss << " " << stack.pop();
-
+		   
     stack.push(inf[i]);
   }
-  while (!stack.isEmpty()) ss << " " << stack.pop();
-  ss.seekg(1);
+while (!stack.isEmpty()) ss << " " << stack.pop();
+ ss.seekg(1);
   return std::string(std::istreambuf_iterator<char>(ss), {});
 }
 int eval(std::string pref) {
