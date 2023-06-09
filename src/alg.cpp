@@ -1,79 +1,42 @@
 // Copyright 2021 NNTU-CS
-#include <cctype>
-#include <map>
-#include <sstream>
+#ifndef INCLUDE_TSTACK_H_
+#define INCLUDE_TSTACK_H_
 #include <string>
-#include "tstack.h"
-int grabNum(int *index, std::string str) {
-  int ret = 0;
-  while (*index < str.size() && isdigit(str[*index])) {
-    ret *= 10;
-    ret += str[*index] - '0';
-    index++;
-  }
-  return ret;
-}
-int getPrecedence(char c) {
-  static std::string alphabet("-+/*^");
-  return alphabet.find(c);
-}
-std::string infx2pstfx(std::string inf) {
-  std::stringstream ss;
-  TStack<char, 100> stack;
+template<typename T, int size>
+class TStack {
+ private:
+    T arr[100];
+    int m;
 
-  for (int i = 0; i < inf.size(); i++) {
-    if (isdigit(inf[i])) {
-		  ss << " " << grabNum(&i, inf);
-      continue;
+ public:
+    TStack() : m(-1) {}
+    void push(T value) {
+        if (!isFull())
+            arr[++m] = value;
+        else
+            throw std::string("Full");
     }
-
-    if ('(' == inf[i]) {
-      stack.push(inf[i]);
-      continue;
+    T get() const {
+        return arr[m];
     }
-
-    if (')' == inf[i]) {
-		 while (stack.get() != '(') ss << " " << stack.pop();
-      stack.pop();
-      continue;
+    T pop() {
+        if (isEmpty())
+            throw std::string("Empty");
+        else
+            return arr[m--];
     }
-    if (getPrecedence(inf[i]) == std::string::npos) continue;
-
-    while (!stack.isEmpty() && (stack.get() != '(') &&
-           (getPrecedence(stack.get()) >= getPrecedence(inf[i])))
-		   
-    stack.push(inf[i]);
-  }
-while (!stack.isEmpty()) ss << " " << stack.pop();
- ss.seekg(1);
-  return std::string(std::istreambuf_iterator<char>(ss), {});
-}
-int eval(std::string pref) {
-  TStack<int, 100> stack;
-  for (int i = 0; i < pref.size(); i++) {
-    if (isdigit(pref[i])) {
-      stack.push(grabNum(&i, pref));
-      continue;
+    bool isEmpty() const {
+        return m == -1;
     }
-    int left, right;
-    switch (pref[i]) {
-      case '+':
-        stack.push(stack.pop() + stack.pop());
-        break;
-      case '-':
-        right = stack.pop();
-        left = stack.pop();
-        stack.push(left - right);
-        break;
-      case '*':
-        stack.push(stack.pop() * stack.pop());
-        break;
-      case '/':
-        right = stack.pop();
-        left = stack.pop();
-        stack.push(left / right);
-        break;
+    bool isFull() const {
+        return m == size - 1;
     }
-  }
-  return stack.pop();
-}
+    T top() {
+        if (!isEmpty()) {
+            return arr[m];
+        } else {
+            exit(EXIT_FAILURE);
+        }
+    }
+};
+#endif
