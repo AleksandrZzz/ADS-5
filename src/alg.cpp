@@ -3,103 +3,91 @@
 #include <map>
 #include "tstack.h"
 
-int Preority(char c) {
-    if (c == '(')
+int prior(char sim) {
+    switch (sim) {
+    case '(':
         return 0;
-    if (c == ')')
+        break;
+    case ')':
         return 1;
-    if (c == '+' || c == '-')
+        break;
+    case '+':
         return 2;
-    if (c == '*' || c == '/') {
+        break;
+    case '-':
+        return 2;
+        break;
+    case '*':
         return 3;
-    } else {
-        return -1;
+        break;
+    case '/':
+        return 3;
+        break;
+    default:
+        return 0;
+        break;
     }
 }
-
 std::string infx2pstfx(std::string inf) {
-  // добавьте код
-  return std::string("");
-    TStack<char, 100> st1;
-    std::string res;
-    int k = 0;
-    for (char a : inf) {
-        bool flag = 1;
-        if (Preority(a) == -1) {
-            res += a;
-            res += ' ';
-            flag = 0;
-        }
-        if (Preority(a) == 0) {
-            st1.Push(a);
-            flag = 0;
-        }
-        if (Preority(a) > Preority(st1.get())) {
-            st1.Push(a);
-            flag = 0;
-        }
-        if (st1.isEmpty() && Preority(a) != -1) {
-            st1.Push(a);
-            flag = 0;
-        }
-        if (flag && a != ')') {
-            while (Preority(st1.get()) >= Preority(a)) {
-                res += st1.pop();
-                res += ' ';
+TStack<char, 100> opStack;
+    std::string result = "";
+    for (int i = 0; i < inf.size(); i++) {
+        if (isdigit(inf[i]) != 0) {
+            result += inf[i];
+        } else if (prior(inf[i]) == 2 || prior(inf[i]) == 3) {
+            result += " ";
+            if (opStack.isEmpty() || prior(opStack.get()) == 0 ||
+                prior(inf[i]) > prior(opStack.get())) {
+                opStack.push(inf[i]);
+            } else if (prior(inf[i]) <= prior(opStack.get())) {
+                while (prior(inf[i]) <= prior(opStack.get())) {
+                    result += opStack.pop();
+                    result += " ";
+                }
+                opStack.push(inf[i]);
             }
-            st1.Push(a);
-        }
-        if (a == ')') {
-            while (st1.get() != '(') {
-                res += st1.pop();
-                res += ' ';
+        } else if (prior(inf[i]) == 0) {
+            opStack.push(inf[i]);
+        } else if (prior(inf[i]) == 1) {
+            while (prior(opStack.get()) != 0) {
+                result += " ";
+                result += opStack.pop();
             }
-            st1.pop();
+            opStack.pop();
         }
-        if (k == inf.size() - 1) {
-            while (!st1.isEmpty()) {
-                res += st1.pop();
-                if (st1.GetTop() != -1)
-                    res += ' ';
-            }
-        }
-        ++k;
     }
-    return res;
+    while (!opStack.isEmpty()) {
+        result += " ";
+        result += opStack.pop();
+    }
+    return std::string(result);
 }
-
+int calculate(const int a, const int b, const char oper) {
+    switch (oper) {
+        case '+':
+            return b + a;
+        case '-':
+            return b - a;
+        case '*':
+            return a * b;
+        case '/':
+            return b / a;
+        default:
+            break;
+    }
+    return 0;
+}
 int eval(std::string pref) {
-  // добавьте код
-  return 0;
-    TStack<int, 100> st2;
-    for (char a : pref) {
-        if (a == ' ') {
-            continue;
-        }
-        if (a == '+') {
-            int p = st2.pop();
-            p += st2.pop();
-            st2.Push(p);
-        }
-        if (a == '-') {
-            int p = st2.pop();
-            p = st2.pop() - p;
-            st2.Push(p);
-        }
-        if (a == '*') {
-            int p = st2.pop();
-            p *= st2.pop();
-            st2.Push(p);
-        }
-        if (a == '/') {
-            int p = st2.pop();
-            p = st2.pop() / p;
-            st2.Push(p);
-        }
-        if ((a - '0') > 0) {
-            int o = a - '0';
-            st2.Push(o);
+TStack<int, 100> opStack2;
+    for (int i = 0; i < pref.size(); i++) {
+        if (isdigit(pref[i]) != 0) {
+            int num = pref[i] - '0';
+            opStack2.push(num);
+        } else if (prior(pref[i]) == 2 || prior(pref[i]) == 3) {
+            int a = opStack2.pop();
+            int b = opStack2.pop();
+            opStack2.push(calculate(a, b, pref[i]));
         }
     }
-    return st2.get();
+    return opStack2.pop();
 }
